@@ -1,0 +1,21 @@
+package com.application.orbit;
+
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+
+/**
+ * Created by Nick on 5/10/2016.
+ */
+public class DigitFilter implements TextField.TextFieldFilter {
+
+    private char[] accepted;
+
+    public DigitFilter() {
+        accepted = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', 'E'};
+    }
+
+    @Override
+    public boolean acceptChar(TextField textField, char c) {
+        for (char a : accepted)
+            if (a == c) return true;
+        return false;
+    }}
