@@ -3,68 +3,68 @@ planet_skins.png
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
-Planet4
+Planet1
   rotate: false
   xy: 1, 604
   size: 300, 300
   orig: 300, 300
   offset: 0, 0
   index: -1
-Planet5
+Planet6
   rotate: false
   xy: 1, 302
   size: 300, 300
   orig: 300, 300
   offset: 0, 0
   index: -1
-Planet3
-  rotate: false
-  xy: 303, 605
-  size: 300, 299
-  orig: 300, 300
-  offset: 0, 1
-  index: -1
-Planet1
-  rotate: false
-  xy: 1, 1
-  size: 299, 299
-  orig: 300, 300
-  offset: 0, 1
-  index: -1
 Planet10
   rotate: false
-  xy: 303, 304
+  xy: 303, 605
   size: 299, 299
   orig: 300, 300
   offset: 1, 0
   index: -1
 Planet2
   rotate: false
-  xy: 605, 605
+  xy: 1, 1
   size: 299, 299
   orig: 300, 300
   offset: 1, 0
   index: -1
-Planet6
+Planet4
   rotate: false
-  xy: 604, 304
+  xy: 303, 304
   size: 299, 299
   orig: 300, 300
-  offset: 1, 1
+  offset: 0, 1
   index: -1
 Planet7
   rotate: false
-  xy: 303, 3
+  xy: 604, 605
   size: 299, 299
+  orig: 300, 300
+  offset: 1, 0
+  index: -1
+Planet3
+  rotate: false
+  xy: 604, 304
+  size: 298, 299
   orig: 300, 300
   offset: 1, 0
   index: -1
 Planet9
   rotate: false
-  xy: 604, 5
+  xy: 303, 5
   size: 299, 297
   orig: 299, 297
   offset: 0, 0
+  index: -1
+Planet5
+  rotate: false
+  xy: 604, 5
+  size: 298, 297
+  orig: 300, 300
+  offset: 1, 1
   index: -1
 
 planet_skins2.png

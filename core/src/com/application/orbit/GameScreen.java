@@ -57,7 +57,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     OrthographicCamera camera;
     World world;
     Box2DDebugRenderer debugRenderer;
-    Body sun, planet, asteroid;
+    Body sun, planet;
     ArrayList<Body> bodies;
     boolean running, launching, pickingOrbit, chaseCamOn, addingBody, addingBodyMatrix;
     ArrayList<CircleShape> circles;
@@ -71,7 +71,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
 
     LaunchSimulation launchSimulation;
 
-    int bodyMatrixN = 5;
+    int bodyMatrixN;
 
     TextureAtlas planetSkins;
 
@@ -116,14 +116,11 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
 
         planet = createBody(STANDARD_MASS, sun.getWorldCenter().x + 100, worldHeight / 2);
 
-        asteroid = createBody(STANDARD_MASS / 100, planet.getWorldCenter().x + 20, worldHeight / 2);
-
 
         bodyMatrixN = DEFAULT_BODY_MATRIX_N;
 
         //make planet orbit sun and asteroid orbit planet
         orbit(planet, sun);
-        orbit(asteroid, planet);
 
         //launching is false. This is true if the user is launching a planet
         launching = false;
@@ -1005,6 +1002,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
 
             toggleSelectedBodyMovable();
         }
+
+
         return false;
     }
 
@@ -1136,9 +1135,11 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
 
         //TODO scale mass of selected body
 
-        if(Gdx.app.getType() == Application.ApplicationType.WebGL) {
+        /*if(Gdx.app.getType() == Application.ApplicationType.WebGL) {
             amount *= 0.05f;
-        }
+        }*/
+
+        amount *= 2;
 
         if(isBodySelected()) {
 

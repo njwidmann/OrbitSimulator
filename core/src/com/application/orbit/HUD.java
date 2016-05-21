@@ -12,6 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextTooltip;
+import com.badlogic.gdx.scenes.scene2d.ui.TooltipManager;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -52,6 +54,7 @@ public class HUD extends Stage {
 
     Slider scaleSlider, zoomSlider;
     Skin uiSkin, iconSkin;
+    TooltipManager tooltipManager;
 
     BodyInfoWindow bodyInfoWindow;
     SettingsWindow settingsWindow;
@@ -104,6 +107,12 @@ public class HUD extends Stage {
 
         TextureAtlas atlas = new TextureAtlas(ICON_FILE);
         iconSkin = new Skin(atlas);
+
+        tooltipManager = new TooltipManager();
+        tooltipManager.initialTime = 1f;
+        tooltipManager.subsequentTime = 0.5f;
+        tooltipManager.resetTime = 1f;
+        tooltipManager.animations = false;
 
         currentClickFunction = ClickFunction.NONE;
         subMenuOpen = SubMenu.NONE;
@@ -615,6 +624,7 @@ public class HUD extends Stage {
                 menuButton.addAction(Actions.alpha(1));
             }
         });
+        menuButton.addListener(new TextTooltip("Open/Close menu", tooltipManager, uiSkin));
     }
 
     /**
@@ -633,6 +643,7 @@ public class HUD extends Stage {
                 subMenu(SubMenu.ADD);
             }
         });
+        addButton.addListener(new TextTooltip("Add new bodies", tooltipManager, uiSkin));
     }
 
     /**
@@ -651,6 +662,7 @@ public class HUD extends Stage {
                 subMenu(SubMenu.EDIT);
             }
         });
+        editButton.addListener(new TextTooltip("Edit selected body", tooltipManager, uiSkin));
     }
 
     /**
@@ -669,6 +681,7 @@ public class HUD extends Stage {
                 subMenu(SubMenu.VIEW);
             }
         });
+        viewButton.addListener(new TextTooltip("Camera settings", tooltipManager, uiSkin));
     }
 
     /**
@@ -687,6 +700,7 @@ public class HUD extends Stage {
                 subMenu(SubMenu.SETTINGS);
             }
         });
+        settingsButton.addListener(new TextTooltip("More options", tooltipManager, uiSkin));
     }
 
     /**
@@ -705,6 +719,7 @@ public class HUD extends Stage {
                 clickFunction(ClickFunction.ADD_SINGLE);
             }
         });
+        addSingleButton.addListener(new TextTooltip("Add single body", tooltipManager, uiSkin));
     }
 
     /**
@@ -723,6 +738,7 @@ public class HUD extends Stage {
                 clickFunction(ClickFunction.ADD_MULTIPLE);
             }
         });
+        addMultipleButton.addListener(new TextTooltip("Add body matrix", tooltipManager, uiSkin));
     }
 
 
@@ -738,6 +754,7 @@ public class HUD extends Stage {
                 clickFunction(ClickFunction.SCALE);
             }
         });
+        scaleButton.addListener(new TextTooltip("Scale selected body", tooltipManager, uiSkin));
     }
 
 
@@ -755,6 +772,7 @@ public class HUD extends Stage {
 
             }
         });
+        deleteButton.addListener(new TextTooltip("Delete selected body", tooltipManager, uiSkin));
     }
 
     private void createStickyButtonFunctionality() {
@@ -772,6 +790,7 @@ public class HUD extends Stage {
                 updateStickyIcon();
             }
         });
+        stickyButton.addListener(new TextTooltip("Lock/Unlock body position", tooltipManager, uiSkin));
     }
 
     private void createOrbitButtonFunctionality() {
@@ -791,6 +810,7 @@ public class HUD extends Stage {
                 }
             }
         });
+        orbitButton.addListener(new TextTooltip("Orbit", tooltipManager, uiSkin));
     }
 
     private void createBodyInfoButtonFunctionality() {
@@ -805,6 +825,7 @@ public class HUD extends Stage {
                 clickFunction(ClickFunction.BODY_INFO);
             }
         });
+        infoButton.addListener(new TextTooltip("Selected body properties", tooltipManager, uiSkin));
     }
 
     private void createZoomButtonFunctionality() {
@@ -819,6 +840,7 @@ public class HUD extends Stage {
 
             }
         });
+        zoomButton.addListener(new TextTooltip("Zoom camera", tooltipManager, uiSkin));
     }
 
     private void createOptionsButtonFunctionality() {
@@ -833,6 +855,7 @@ public class HUD extends Stage {
                 clickFunction(ClickFunction.SETTINGS);
             }
         });
+        optionsButton.addListener(new TextTooltip("Settings", tooltipManager, uiSkin));
     }
 
     private void createResetButtonFunctionality() {
@@ -849,6 +872,7 @@ public class HUD extends Stage {
                 resetButton.addAction(Actions.alpha(1));
             }
         });
+        resetButton.addListener(new TextTooltip("Reset camera", tooltipManager, uiSkin));
     }
 
     private void createCenterButtonFunctionality() {
@@ -869,6 +893,7 @@ public class HUD extends Stage {
 
             }
         });
+        centerButton.addListener(new TextTooltip("Center camera on selected body", tooltipManager, uiSkin));
     }
 
     private void createDeleteAllButtonFunctionality() {
@@ -884,6 +909,8 @@ public class HUD extends Stage {
                 deleteAllButton.addAction(Actions.alpha(1));
             }
         });
+
+        deleteAllButton.addListener(new TextTooltip("Delete all bodies", tooltipManager, uiSkin));
     }
 
     private void createScaleSliderFunctionality() {
