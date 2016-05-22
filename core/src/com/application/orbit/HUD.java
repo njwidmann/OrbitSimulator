@@ -47,8 +47,9 @@ public class HUD extends Stage {
     SubMenu subMenuOpen;
 
     public enum ClickFunction {
-        NONE, ADD_SINGLE, ADD_MULTIPLE, ORBIT, SCALE, ZOOM, BODY_INFO, SETTINGS
+        NONE, ADD_SINGLE, ADD_MULTIPLE, ORBIT, SCALE, ZOOM, BODY_INFO, SETTINGS, APP_INFO, HELP
     }
+
 
     ClickFunction currentClickFunction;
 
@@ -58,6 +59,8 @@ public class HUD extends Stage {
 
     BodyInfoWindow bodyInfoWindow;
     SettingsWindow settingsWindow;
+    AppInfoWindow appInfoWindow;
+    HelpWindow helpWindow;
 
     TextButton //main menu buttons
             menuButton,
@@ -88,6 +91,7 @@ public class HUD extends Stage {
     BitmapFont font;
     GameScreen gameScreen;
     Table mainTable, addTable, editTable, viewTable, settingsTable, scaleSliderTable, zoomSliderTable;
+    MessageOverlay messageOverlay;
 
     boolean menuOpen;
 
@@ -295,9 +299,11 @@ public class HUD extends Stage {
 
         createIconGraphic("button.help");
         helpButton = new TextButton("", textButtonStyles.get(textButtonStyles.size()-1));
+        createHelpButtonFunctionality();
 
         createIconGraphic("button.info");
         appInfoButton = new TextButton("", textButtonStyles.get(textButtonStyles.size()-1));
+        createAppInfoButtonFunctionality();
 
         settingsTable = new Table();
         settingsTable.setDebug(false);
@@ -387,6 +393,23 @@ public class HUD extends Stage {
         addActor(settingsWindow);
         settingsWindow.setSize(SETTINGS_WINDOW_WIDTH, SETTINGS_WINDOW_HEIGHT);
         settingsWindow.setVisible(false);
+
+        // APP INFO WINDOW
+
+        appInfoWindow = new AppInfoWindow("  App Info", uiSkin, gameScreen);
+        addActor(appInfoWindow);
+        appInfoWindow.setSize(SETTINGS_WINDOW_WIDTH, SETTINGS_WINDOW_HEIGHT);
+        appInfoWindow.setVisible(false);
+
+        // HELP WINDOW
+        helpWindow = new HelpWindow("  Help/Tutorial", uiSkin, gameScreen);
+        addActor(helpWindow);
+        helpWindow.setSize(SETTINGS_WINDOW_WIDTH, SETTINGS_WINDOW_HEIGHT);
+        helpWindow.setVisible(false);
+
+        // MESSAGE OVERLAY
+        messageOverlay = new MessageOverlay(uiSkin);
+        addActor(messageOverlay);
 
 
     }
@@ -564,7 +587,14 @@ public class HUD extends Stage {
                 settingsWindow.setVisible(true);
                 optionsButton.addAction(Actions.alpha(BUTTON_ALPHA, BUTTON_ANIMATION_TIME));
                 break;
-
+            case APP_INFO:
+                appInfoWindow.setVisible(true);
+                appInfoButton.addAction(Actions.alpha(BUTTON_ALPHA, BUTTON_ANIMATION_TIME));
+                break;
+            case HELP:
+                helpWindow.setVisible(true);
+                helpButton.addAction(Actions.alpha(BUTTON_ALPHA, BUTTON_ANIMATION_TIME));
+                break;
         }
     }
 
@@ -586,7 +616,6 @@ public class HUD extends Stage {
             case ORBIT:
                 gameScreen.setPickingOrbit(false);
                 orbitButton.addAction(Actions.alpha(1, BUTTON_ANIMATION_TIME));
-
                 break;
             case SCALE:
                 scaleSliderTable.setPosition(sliderXDisplacement, sliderYDisplacement);
@@ -603,6 +632,14 @@ public class HUD extends Stage {
             case SETTINGS:
                 settingsWindow.setVisible(false);
                 optionsButton.addAction(Actions.alpha(1, BUTTON_ANIMATION_TIME));
+                break;
+            case APP_INFO:
+                appInfoWindow.setVisible(false);
+                appInfoButton.addAction(Actions.alpha(1, BUTTON_ANIMATION_TIME));
+                break;
+            case HELP:
+                helpWindow.setVisible(false);
+                helpButton.addAction(Actions.alpha(1, BUTTON_ANIMATION_TIME));
                 break;
         }
     }
@@ -659,6 +696,9 @@ public class HUD extends Stage {
             }
 
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if(!gameScreen.isBodySelected()) {
+                    messageOverlay.showTip("Select a body to edit");
+                }
                 subMenu(SubMenu.EDIT);
             }
         });
@@ -751,7 +791,12 @@ public class HUD extends Stage {
             }
 
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                clickFunction(ClickFunction.SCALE);
+                scaleButton.addAction(Actions.alpha(1));
+                if(gameScreen.isBodySelected()) {
+                    clickFunction(ClickFunction.SCALE);
+                } else {
+                    messageOverlay.showTip("Body must be selected to scale");
+                }
             }
         });
         scaleButton.addListener(new TextTooltip("Scale selected body", tooltipManager, uiSkin));
@@ -767,7 +812,13 @@ public class HUD extends Stage {
             }
 
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                gameScreen.deleteSelectedBody();
+                if(gameScreen.isBodySelected()) {
+                    String name = getSelectedBodyName();
+                    messageOverlay.showTip(name + " deleted");
+                    gameScreen.deleteSelectedBody();
+                } else {
+                    messageOverlay.showTip("Body must be selected to delete");
+                }
                 deleteButton.addAction(Actions.alpha(1));
 
             }
@@ -788,6 +839,18 @@ public class HUD extends Stage {
                 stickyButton.addAction(Actions.alpha(1));
 
                 updateStickyIcon();
+
+                if(!gameScreen.isBodySelected()) {
+                    messageOverlay.showTip("Body must be selected to lock");
+                } else {
+                    boolean sticky = !gameScreen.getDynamicSprite(gameScreen.getSelectedBody()).isMovable();
+                    if(sticky) {
+                        messageOverlay.showTip(getSelectedBodyName() + " locked");
+                    } else {
+                        messageOverlay.showTip(getSelectedBodyName() + " unlocked");
+                    }
+
+                }
             }
         });
         stickyButton.addListener(new TextTooltip("Lock/Unlock body position", tooltipManager, uiSkin));
@@ -803,10 +866,16 @@ public class HUD extends Stage {
 
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 if(gameScreen.isBodySelected()) {
-                    clickFunction(ClickFunction.ORBIT);
+                    if (gameScreen.getDynamicSprite(gameScreen.getSelectedBody()).isMovable()) {
+                        clickFunction(ClickFunction.ORBIT);
+                        messageOverlay.showTip("Select a body to orbit around");
+                    } else {
+                        messageOverlay.showTip(getSelectedBodyName() + " is locked. Unlock to set orbit");
+                    }
                 } else {
                     orbitButton.addAction(Actions.alpha(1));
-                    //TODO: Add message on screen saying "body must be selected"
+                    messageOverlay.showTip("Body must be selected to set orbit");
+
                 }
             }
         });
@@ -870,6 +939,7 @@ public class HUD extends Stage {
                 gameScreen.resetCamera();
                 centerButton.addAction(Actions.alpha(1));
                 resetButton.addAction(Actions.alpha(1));
+                messageOverlay.showTip("Camera reset");
             }
         });
         resetButton.addListener(new TextTooltip("Reset camera", tooltipManager, uiSkin));
@@ -880,8 +950,10 @@ public class HUD extends Stage {
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 if(!gameScreen.isChaseCamOn()) {
                     centerButton.addAction(Actions.alpha(BUTTON_ALPHA));
+                    messageOverlay.showTip("Camera is following selected body");
                 } else {
                     centerButton.addAction(Actions.alpha(1));
+                    messageOverlay.showTip("Camera is free");
                 }
 
                 gameScreen.setChaseCamOn(!gameScreen.isChaseCamOn());
@@ -907,10 +979,45 @@ public class HUD extends Stage {
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 gameScreen.deleteAllBodies();
                 deleteAllButton.addAction(Actions.alpha(1));
+                messageOverlay.showTip("All bodies deleted");
             }
         });
 
         deleteAllButton.addListener(new TextTooltip("Delete all bodies", tooltipManager, uiSkin));
+
+    }
+
+
+    private void createAppInfoButtonFunctionality() {
+        appInfoButton.addListener(new InputListener() {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                appInfoButton.addAction(Actions.alpha(BUTTON_ALPHA));
+
+                return true;
+            }
+
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                clickFunction(ClickFunction.APP_INFO);
+            }
+        });
+
+        appInfoButton.addListener(new TextTooltip("App Info", tooltipManager, uiSkin));
+    }
+
+    private void createHelpButtonFunctionality() {
+        helpButton.addListener(new InputListener() {
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                helpButton.addAction(Actions.alpha(BUTTON_ALPHA));
+
+                return true;
+            }
+
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                clickFunction(ClickFunction.HELP);
+            }
+        });
+
+        helpButton.addListener(new TextTooltip("Help/Tutorial", tooltipManager, uiSkin));
     }
 
     private void createScaleSliderFunctionality() {
@@ -939,13 +1046,12 @@ public class HUD extends Stage {
         {
 
             @Override
-            public void changed(ChangeEvent event, Actor actor)
-            {
-                    Slider slider = (Slider) actor;
+            public void changed(ChangeEvent event, Actor actor) {
+                Slider slider = (Slider) actor;
 
                     float zoom = slider.getValue();
 
-                    zoom = gameScreen.MAX_ZOOM + gameScreen.MIN_ZOOM - zoom;
+                zoom = gameScreen.MAX_ZOOM + gameScreen.MIN_ZOOM - zoom;
 
                     gameScreen.setZoom(zoom);
             }
@@ -964,6 +1070,11 @@ public class HUD extends Stage {
             }
         } else {
             stickyButton.setStyle(textButtonStyles.get(UNLOCK_ICON_INDEX));
+
         }
+    }
+
+    public String getSelectedBodyName() {
+        return gameScreen.getDynamicSprite(gameScreen.getSelectedBody()).getName();
     }
 }

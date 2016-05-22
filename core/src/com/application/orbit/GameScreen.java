@@ -376,6 +376,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         for(int i = bodies.size() - 1; i >= 0; i--) {
             deleteBody(i);
         }
+        DynamicSprite.bodyNum = 0; //reset count for names
     }
 
     /**
@@ -664,10 +665,12 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
             hud.scaleSlider.setValue(radius);
             sprites.get(selectedBody).setSelected(true);
             hud.bodyInfoWindow.fillInfo(getDynamicSprite(getSelectedBody()));
+            hud.messageOverlay.showBodyName(getDynamicSprite(getSelectedBody()).getName());
 
         } else {
             hud.scaleSlider.setDisabled(true);
             hud.bodyInfoWindow.disable();
+            hud.messageOverlay.hideBodyName();
 
         }
 
@@ -693,6 +696,9 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
      */
     private void setLaunching(boolean bool) {
         launching = bool;
+        if(bool && !getDynamicSprite(getSelectedBody()).isMovable()) {
+            hud.messageOverlay.showTip(hud.getSelectedBodyName() + " is locked. Unlock to launch");
+        }
         if(!bool && !hud.isMenuOpen())
             launchSimulation.stopSimulation();
         //TODO Add visual

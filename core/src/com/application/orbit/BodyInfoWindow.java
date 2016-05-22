@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
@@ -57,6 +58,7 @@ public class BodyInfoWindow extends Window {
         final Label bodyNameLabel = new Label("Name: ", skin);
         bodyNameField = new TextField("", skin);
         addTextFieldListener(bodyNameField, "Name");
+
 
         final Label positionXLabel = new Label("Position X: ", skin);
         final Label positionYLabel = new Label("Position Y: ", skin);
@@ -237,6 +239,8 @@ public class BodyInfoWindow extends Window {
         gameScreen.getDynamicSprite(selectedBody).setName(name);
 
         gameScreen.doLaunchSimulation(new Vector2(velocityX, velocityY));
+
+        gameScreen.hud.messageOverlay.showBodyName(name);
     }
 
 
