@@ -481,6 +481,9 @@ public class HUD extends Stage {
             case EDIT:
                 editTable.addAction(Actions.moveTo(0, submenuYDisplacement, MENU_ANIMATION_TIME));
                 editButton.addAction(Actions.alpha(BUTTON_ALPHA, BUTTON_ANIMATION_TIME));
+                if(!gameScreen.isBodySelected()) {
+                    messageOverlay.showTip("Select a body to edit");
+                }
                 break;
             case VIEW:
                 viewTable.addAction(Actions.moveTo(0, submenuYDisplacement, MENU_ANIMATION_TIME));
@@ -696,9 +699,7 @@ public class HUD extends Stage {
             }
 
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                if(!gameScreen.isBodySelected()) {
-                    messageOverlay.showTip("Select a body to edit");
-                }
+
                 subMenu(SubMenu.EDIT);
             }
         });

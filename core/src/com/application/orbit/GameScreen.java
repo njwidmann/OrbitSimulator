@@ -367,6 +367,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         if(isBodySelected()) {
             deleteBody(selectedBody);
         }
+        setSelectedBody(-1);
     }
 
     /**
@@ -377,6 +378,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
             deleteBody(i);
         }
         DynamicSprite.bodyNum = 0; //reset count for names
+        setSelectedBody(-1);
     }
 
     /**
