@@ -998,8 +998,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
             }
         }
 
-        if (keycode == Input.Keys.D) {
-            //If the D key is pressed, delete the selected body
+        if (keycode == Input.Keys.D || keycode == Input.Keys.DEL || keycode == Input.Keys.FORWARD_DEL) {
+            //If the D or backspace or delete key is pressed, delete the selected body
 
             deleteSelectedBody();
 

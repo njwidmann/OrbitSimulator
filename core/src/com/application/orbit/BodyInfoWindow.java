@@ -232,6 +232,12 @@ public class BodyInfoWindow extends Window {
         float mass = Float.valueOf(massField.getText());
         String name = bodyNameField.getText();
 
+        if(mass > gameScreen.MAX_BODY_MASS) {
+            mass = gameScreen.MAX_BODY_MASS;
+        } else if(mass < gameScreen.MIN_BODY_MASS) {
+            mass = gameScreen.MIN_BODY_MASS;
+        }
+
         Body selectedBody = gameScreen.getSelectedBody();
         selectedBody.setTransform(positionX, positionY, 0);
         selectedBody.setLinearVelocity(velocityX, velocityY);

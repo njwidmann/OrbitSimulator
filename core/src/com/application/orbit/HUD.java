@@ -37,7 +37,8 @@ public class HUD extends Stage {
     static final int BODY_INFO_WINDOW_HEIGHT = 700;
     static final int SETTINGS_WINDOW_WIDTH = 600;
     static final int SETTINGS_WINDOW_HEIGHT = 700;
-
+    static final int HELP_WINDOW_WIDTH = 1200;
+    static final int HELP_WINDOW_HEIGHT = 700;
 
 
     public enum SubMenu {
@@ -55,6 +56,7 @@ public class HUD extends Stage {
 
     Slider scaleSlider, zoomSlider;
     Skin uiSkin, iconSkin;
+    TextureAtlas iconAtlas;
     TooltipManager tooltipManager;
 
     BodyInfoWindow bodyInfoWindow;
@@ -109,8 +111,8 @@ public class HUD extends Stage {
 
         uiSkin = new Skin(Gdx.files.internal(UI_FILE));
 
-        TextureAtlas atlas = new TextureAtlas(ICON_FILE);
-        iconSkin = new Skin(atlas);
+        iconAtlas = new TextureAtlas(ICON_FILE);
+        iconSkin = new Skin(iconAtlas);
 
         tooltipManager = new TooltipManager();
         tooltipManager.initialTime = 1f;
@@ -402,9 +404,9 @@ public class HUD extends Stage {
         appInfoWindow.setVisible(false);
 
         // HELP WINDOW
-        helpWindow = new HelpWindow("  Help/Tutorial", uiSkin, gameScreen);
+        helpWindow = new HelpWindow("  Help/Tutorial", uiSkin, gameScreen, this);
         addActor(helpWindow);
-        helpWindow.setSize(SETTINGS_WINDOW_WIDTH, SETTINGS_WINDOW_HEIGHT);
+        helpWindow.setSize(HELP_WINDOW_WIDTH, HELP_WINDOW_HEIGHT);
         helpWindow.setVisible(false);
 
         // MESSAGE OVERLAY
