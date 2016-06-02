@@ -41,7 +41,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     static final int DEFAULT_BODY_MATRIX_N = 2;
     static final int MIN_BODY_MATRIX_N = 2;
     static final int MAX_BODY_MATRIX_N = 10;
-    final float SIZE_ADJUSTMENT_FACTOR = 1/10f;
+    final float SIZE_ADJUSTMENT_FACTOR = 1/100f;
     final float MIN_BODY_MASS = 1;
     final float MAX_BODY_MASS = 1000000;
     final float HUD_HEIGHT = 960;
@@ -58,7 +58,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     World world;
     Box2DDebugRenderer debugRenderer;
     Body sun, planet;
-    ArrayList<Body> bodies;
+    ArrayList<Body> bodies, bodiesToDelete;
+
     boolean running, launching, pickingOrbit, chaseCamOn, addingBody, addingBodyMatrix;
     ArrayList<CircleShape> circles;
     int selectedBody;
@@ -74,6 +75,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     int bodyMatrixN;
 
     TextureAtlas planetSkins;
+
+    BodyContactListener bodyContactListener;
 
 
     public GameScreen(final GameActivity game) {
@@ -102,6 +105,9 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         bodies = new ArrayList<Body>();
         //circles holds all of the circle shape objects we create that will later need to be disposed of
         circles = new ArrayList<CircleShape>();
+
+        //holds all of the bodies scheduled for deletion in a given timestep
+        bodiesToDelete = new ArrayList<Body>();
 
         batch = new SpriteBatch();
         // We need a sprite since it's going to move
@@ -153,6 +159,9 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         timeStep = TIMESTEP;
         //no body is currently selected. This is used for lots of functionality. e.g. launching and scaling
         setSelectedBody(-1);
+
+        bodyContactListener = new BodyContactListener(this);
+        world.setContactListener(bodyContactListener);
 
     }
 
@@ -277,6 +286,14 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         return chaseCamOn;
     }
 
+    public boolean isBodyFusionActivated() {
+        return bodyContactListener.isBodyFusionActivated();
+    }
+
+    public void setBodyFusionActivated(boolean bool) {
+        bodyContactListener.setBodyFusionActivated(bool);
+    }
+
     public DynamicSprite getDynamicSpriteFromTextureRegion(TextureAtlas.AtlasRegion region) {
         if (region.packedWidth == region.originalWidth && region.packedHeight == region.originalHeight) {
             if (region.rotate) {
@@ -313,13 +330,9 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     private Body createBody(float mass, float x, float y) {
         Body body = createCircle(mass, x, y);
 
-        //Texture texture = DynamicSprite.getRandomTexture(planetSkins);
-
-        //Sprite basicSprite = DynamicSprite.getRandomSprite(planetSkins);
-
         TextureAtlas.AtlasRegion region = getRandomPlanetSkin();
 
-        //Now we create a sprite (graphic) for the body
+        //Now create a sprite (graphic) for the body
         DynamicSprite sprite = getDynamicSpriteFromTextureRegion(region); //the dynamic sprite class is optimized for use with bodies
         sprite.attachBody(body);
 
@@ -335,16 +348,33 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         return body;
     }
 
+    public void deleteScheduledBodies() {
+        for(int i = bodiesToDelete.size() - 1; i >= 0; i--) {
+            Body body = bodiesToDelete.get(i);
+            int bodyIndex = bodies.indexOf(body);
+            bodies.remove(body);
+            world.destroyBody(body);
+            sprites.get(bodyIndex).setAlpha(0);
+            sprites.remove(bodyIndex);
+
+            bodiesToDelete.remove(i);
+
+            if (bodyIndex < selectedBody) { //shift selected body index
+                selectedBody -= 1;
+            }
+        }
+    }
+
     /**
      * This method destroys a given body
      * @param body The body to destroy
      */
     public void deleteBody(Body body) {
         int bodyIndex = bodies.indexOf(body);
-        bodies.remove(body);
-        world.destroyBody(body);
-        sprites.get(bodyIndex).setAlpha(0); //set sprite to transparent
-        sprites.remove(bodyIndex);
+
+        //add the body to the queue for deletion (happens at the end of the frame/step)
+        if(!bodiesToDelete.contains(body))  //don't add to the list if the body is already there
+            bodiesToDelete.add(body);
 
         if(bodyIndex == selectedBody) {
             selectedBody = -1;
@@ -885,6 +915,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         //update HUD
         hud.act(TIMESTEP);
         hud.draw();
+
+        deleteScheduledBodies();
 
 
     }

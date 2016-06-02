@@ -17,7 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 public class SettingsWindow extends Window {
 
     Slider launchSimulationSlider, matrixSizeSlider;
-    CheckBox dynamicLaunchSimulatorCheckBox;
+    CheckBox dynamicLaunchSimulatorCheckBox, bodyFusionCheckBox;
     TextButton exitButton, saveButton;
     GameScreen gameScreen;
     DigitFilter digitFilter;
@@ -65,6 +65,14 @@ public class SettingsWindow extends Window {
             }
         });
 
+        bodyFusionCheckBox = new CheckBox(" Body Fusion", skin);
+        bodyFusionCheckBox.setChecked(false);
+        bodyFusionCheckBox.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                gameScreen.setBodyFusionActivated(bodyFusionCheckBox.isChecked());
+            }
+        });
+
         final Label matrixSizeLabel = new Label("Body Matrix Size: ", skin);
         int minSize = GameScreen.MIN_BODY_MATRIX_N;
         int maxSize = GameScreen.MAX_BODY_MATRIX_N;
@@ -98,6 +106,8 @@ public class SettingsWindow extends Window {
         add(launchSimulationSlider).minWidth(HUD.SETTINGS_WINDOW_WIDTH - 50);
         row();
         add(dynamicLaunchSimulatorCheckBox);
+        row();
+        add(bodyFusionCheckBox);
         row();
         add(matrixSizeLabel);
         row();
