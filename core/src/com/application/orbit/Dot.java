@@ -9,14 +9,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
  */
 public class Dot extends Image {
 
+    /**
+     * Dot extends the Image class so it takes in a Texture. This texture is the graphic asset that
+     * is used to represent the simulation dot
+     * @param texture the Texture object for the dot
+     */
     public Dot(Texture texture) {
         super(texture);
     }
 
     /**
      * This method is used to set the center of the dot at a given (x,y) coordinates
-     * @param x
-     * @param y
+     * @param x the center x position
+     * @param y the center y position
      */
     public void setPositionCenter(float x, float y) {
         float width = getWidth();

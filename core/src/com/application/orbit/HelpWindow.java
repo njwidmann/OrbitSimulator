@@ -44,7 +44,7 @@ public class HelpWindow extends Window {
         final Label description = new Label("This app can be used to simulate the motion of solar bodies\n" +
                 "in space. The interactions between bodies are found using\n" +
                 "Newton's Universal Law of Gravitation with a gravitational\n" +
-                "constant (G) = 1.", skin);
+                "constant (G) = 10.", skin);
 
         final Label controlsTitle = new Label("Controls", skin);
         controlsTitle.setFontScale(1.5f);
@@ -135,7 +135,8 @@ public class HelpWindow extends Window {
         final Label settingsLabel = new Label(  "Open settings menu. This menu\n" +
                                                 "provides options for adjusting\n" +
                                                 "launch simulation and size of\n" +
-                                                "body matrix.\n" +
+                                                "body matrix and allows for\n" +
+                                                "toggling of body fusion.\n" +
                                                 "Note: Having a long dynamic\n" +
                                                 "launch simulation may slow\n" +
                                                 "performance on some devices.", skin);

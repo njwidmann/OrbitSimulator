@@ -413,6 +413,12 @@ public class HUD extends Stage {
         messageOverlay = new MessageOverlay(uiSkin);
         addActor(messageOverlay);
 
+        //open help window if first time playing
+        if(gameScreen.getFirstTimePlaying()) {
+            clickFunction(ClickFunction.HELP);
+            gameScreen.setFirstTimePlaying(false);
+        }
+
 
     }
 
@@ -506,6 +512,7 @@ public class HUD extends Stage {
      */
     public void closeSubMenu(SubMenu menu) {
         subMenuOpen = SubMenu.NONE;
+        deactivateClickFunction(currentClickFunction);
         switch(menu) {
             case ADD:
                 addTable.addAction(Actions.moveTo(addDisplacement, submenuYDisplacement, MENU_ANIMATION_TIME));

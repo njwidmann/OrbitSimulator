@@ -9,6 +9,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -78,9 +79,13 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
 
     BodyContactListener bodyContactListener;
 
+    Preferences preferences;
+
 
     public GameScreen(final GameActivity game) {
         this.game = game;
+
+        preferences = Gdx.app.getPreferences("preferences");
 
         //debug renderer is used for box2d debugging. shows shape outlines around bodies
         debugRenderer = new Box2DDebugRenderer();
@@ -91,7 +96,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         //define initial world dimensions for the camera. These can be adjusted later when a user zooms or resizes the bodyInfoWindow.
         worldHeight = WORLD_HEIGHT;
         worldWidth = worldHeight / screenHeight * screenWidth;
-
 
         // create the camera
         camera = new OrthographicCamera();
@@ -165,6 +169,14 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
 
     }
 
+    public void setFirstTimePlaying(boolean bool) {
+        preferences.putBoolean("first_time_playing", bool);
+    }
+
+    public boolean getFirstTimePlaying() {
+        return preferences.getBoolean("first_time_playing", true);
+    }
+
     /**
      * This method pauses the game by setting timestep = 0
      */
@@ -182,8 +194,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     }
 
     /**
-     * This method is called every frame to check for zooming. This way zoom can be continuous.
-     * TODO: set this to pinch when no planet is selected
+     * This method is called every frame to check for zooming due to the up/down keys. This way zoom
+     * can be continuous.
      */
     private void handleZoom() {
         if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
@@ -348,6 +360,11 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         return body;
     }
 
+    /**
+     * This method deletes all of the bodies that are in queue for deletion. This method is called at
+     * the end of every frame. This is set up so that deleting bodies doesn't interfere with the
+     * physics of the simulation.
+     */
     public void deleteScheduledBodies() {
         for(int i = bodiesToDelete.size() - 1; i >= 0; i--) {
             Body body = bodiesToDelete.get(i);
@@ -359,7 +376,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
 
             bodiesToDelete.remove(i);
 
-            if (bodyIndex < selectedBody) { //shift selected body index
+            if (isBodySelected() && bodyIndex < selectedBody) { //shift selected body index
                 selectedBody -= 1;
             }
         }
@@ -377,7 +394,11 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
             bodiesToDelete.add(body);
 
         if(bodyIndex == selectedBody) {
-            selectedBody = -1;
+            setSelectedBody(-1);
+        }
+
+        if(launchSimulation.getSimulatingBody() == body) {
+            launchSimulation.stopSimulation();
         }
 
     }
@@ -469,8 +490,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
      */
     private Body createCircle(float mass, float x, float y) {
 
-        //mass = mass * SIZE_ADJUSTMENT_FACTOR;
-
         // First we create a body definition
         BodyDef bodyDef = new BodyDef();
         // We set our body to dynamic so it can experience forces, for something like ground which doesn't move we would set it to StaticBody
@@ -486,7 +505,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         circles.add(circle); //add the circle to the circles arraylist so that it can be disposed of on close
         double radius = getCircleRadius(mass); //get the circle's radius based on mass. This function uses a mass-volume conversion
         circle.setRadius((float)radius);
-
 
         // Use the mass to calculate density based on radius
         double density = mass / (Math.PI * Math.pow(radius, 2));
@@ -620,19 +638,10 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
      * @param deltaMass The amount to change it by
      */
     public void changeBodyMass(Body body, float deltaMass) {
-        //get the fixture and shape of the body
-        Fixture fixture = body.getFixtureList().get(0); //bodies can have multiple fixtures so the get() method returns a list. We want the fixture at index 0.
-        Shape circle = fixture.getShape();
+
         float mass = body.getMass();
 
         mass = mass + deltaMass; //adjust mass
-
-        //mass has a lower limit of 1 and an upper limit of 1,000,000 inclusive
-        if (mass < MIN_BODY_MASS) {
-            mass = MIN_BODY_MASS;
-        } else if (mass > MAX_BODY_MASS) {
-            mass = MAX_BODY_MASS;
-        }
 
         setBodyMass(body, mass);
 
@@ -646,6 +655,13 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     public void setBodyMass(Body body, float mass) {
         Fixture fixture = body.getFixtureList().get(0); //bodies can have multiple fixtures so the get() method returns a list. We want the fixture at index 0.
         Shape circle = fixture.getShape();
+
+        //mass has a lower limit of 1 and an upper limit of 1,000,000 inclusive
+        if (mass < MIN_BODY_MASS) {
+            mass = MIN_BODY_MASS;
+        } else if (mass > MAX_BODY_MASS) {
+            mass = MAX_BODY_MASS;
+        }
 
         //recalculate radius and density based on new mass
         double radius = getCircleRadius(mass);
@@ -676,7 +692,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
             world.step(TIMESTEP, 6, 2);
             accumulator -= TIMESTEP;
         }
-        //world.step(deltaTime, 6, 2);
 
     }
 
@@ -733,7 +748,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
         }
         if(!bool && !hud.isMenuOpen())
             launchSimulation.stopSimulation();
-        //TODO Add visual
     }
 
     /**
@@ -742,8 +756,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
      */
     public void setAddingBody(boolean bool) {
         addingBody = bool;
-        setSelectedBody(-1);
-        //TODO Add visual
+        if(bool)
+            setSelectedBody(-1);
     }
 
     /**
@@ -752,8 +766,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
      */
     public void setAddingBodyMatrix(boolean bool) {
         addingBodyMatrix = bool;
-        setSelectedBody(-1);
-        //TODO Add visual
+        if(bool)
+            setSelectedBody(-1);
     }
 
 
@@ -772,7 +786,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
      */
     public void setPickingOrbit(boolean bool) {
         pickingOrbit = bool;
-        //TODO: Add graphics to support picking orbit
     }
 
     /**
@@ -810,8 +823,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     public Vector2 getWorldPosition(Vector2 screenPosition) {
         Vector3 pos = new Vector3(screenPosition, 0);
         camera.unproject(pos);
-        Vector2 worldPosition = new Vector2(pos.x, pos.y);
-        return worldPosition;
+        return new Vector2(pos.x, pos.y);
+
     }
 
     /**
@@ -824,8 +837,8 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     public Vector2 getScreenPosition(Vector2 worldPosition) {
         Vector3 pos = new Vector3(worldPosition, 0);
         camera.project(pos);
-        Vector2 screenPosition = new Vector2(pos.x, pos.y);
-        return screenPosition;
+        return new Vector2(pos.x, pos.y);
+
     }
 
     /**
@@ -956,6 +969,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
 
     @Override
     public void pause() {
+        preferences.flush();
     }
 
     @Override
@@ -1095,7 +1109,7 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
             }
         }
         //if a body was tapped select the tapped body (this is the closest one to the tap)
-        if(tappedBody >= 0 && !launching && selectedBody == tappedBody) {
+        if(!addingBody && tappedBody >= 0 && !launching && selectedBody == tappedBody) {
             setLaunching(true);
             launchSimulation.setReleaseLocation(getSelectedBody().getWorldCenter());
         }
@@ -1331,8 +1345,6 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
             translateCamera(delta); // pan camera
         } else { //if a body is being launched, create a simulation for the launch and the body's movement
             if(isBodySelected()) {
-                Body body = getSelectedBody();
-
                 Vector2 screenReleaseLocation = new Vector2(x, y);
 
                 Vector2 releaseLocation = getWorldPosition(screenReleaseLocation);
@@ -1367,17 +1379,27 @@ public class GameScreen implements Screen, GestureDetector.GestureListener, Inpu
     public boolean pinch (Vector2 initialFirstPointer, Vector2 initialSecondPointer, Vector2 firstPointer, Vector2 secondPointer){
         Gdx.app.log("GameScreen", "pinch registered");
 
-        //TODO: Fix this up BIG TIME
+        if(!launching) {
 
-        float initialDistance = Math.abs(initialFirstPointer.dst(initialSecondPointer));
-        float finalDistance = Math.abs(firstPointer.dst(secondPointer));
+            float initialDistance = Math.abs(initialFirstPointer.dst(initialSecondPointer));
+            float finalDistance = Math.abs(firstPointer.dst(secondPointer));
 
-        float changeInDistance = finalDistance - initialDistance;
+            if (isBodySelected()) { //scale body
 
-        changeBodyMass(planet, changeInDistance);
+                float changeInDistance = finalDistance - initialDistance;
+                float changeInMass = changeInDistance * (float)Math.sqrt(getSelectedBody().getMass()) / 20; //scale delta mass based on current mass
+                changeBodyMass(getSelectedBody(), changeInMass); //add delta mass to current body mass
 
-        setLaunching(false); //make sure this scaling isn't registered as a launch
+            } else { //zoom
 
+                float zoomFraction = 1.0f - finalDistance / initialDistance;  //get change in zoom
+                zoomFraction /= 20; //scale
+                setZoom(getZoom() + zoomFraction);
+            }
+
+            setLaunching(false); //make sure this scaling isn't registered as a launch
+
+        }
         return false;
     }
 
