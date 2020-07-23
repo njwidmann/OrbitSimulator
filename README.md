@@ -6,7 +6,7 @@ Google Play listing:
 
 # OrbitSimulator
 
-![icon](android/res/drawable-xxhdpi/ic_launcher.png)
+![icon](promo_pics/icon.png)
 
 **Explore the physics of gravity in space!**
 
@@ -23,3 +23,10 @@ Great for:
 - Physics students wanting to better understand gravity in space
 - Teachers looking for a fun way to teach students
 - Casual play and entertainment
+
+
+![screenshot](promo_pics/screenshot1.png)
+
+![screenshot](promo_pics/screenshot2.png)
+
+![screenshot](promo_pics/screenshot3.png)
