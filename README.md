@@ -6,6 +6,8 @@ Google Play listing:
 
 # OrbitSimulator
 
+![icon](android/res/drawable-xxhdpi/ic_launcher.png)
+
 **Explore the physics of gravity in space!**
 
 Features:
